@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-arabic: "Readex Pro", sans-serif;
+  --color-primary: #4338CA;
+  --color-primary-soft: #EEF0FF;
+  --color-accent: #F2B544;
+  --color-ink: #141B2D;
+  --color-paper: #F7F8FC;
+  --color-line: #E3E6F0;
+}
+
+body {
+  font-family: var(--font-arabic);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
