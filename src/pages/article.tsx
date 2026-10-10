@@ -1,58 +1,25 @@
-import { Link } from "react-router"
+import { useParams, Link } from "react-router"
 import { ArticleCard } from "../components/ArticleCard"
-
-// Static data: will be replaced by useArticle(id) and related articles from the same category
-const article = {
-    id: 1,
-    title: "ازاي تبدأ تتعلم React في 2026 من غير ما تتوه",
-    description: "خطة عملية خطوة بخطوة: من أساسيات JavaScript لحد أول مشروع حقيقي ترفعه live وتحطه في البورتفوليو.",
-    content: `أول غلطة بيقع فيها أي حد بيبدأ React إنه يبدأ بـ React نفسها. React مكتبة مبنية على JavaScript، فلو مش فاهم الـ functions والـ arrays والـ objects كويس، هتحس إن كل حاجة سحر.
-
-ابدأ بأساسيات JavaScript الحديثة: الـ arrow functions، والـ destructuring، والـ spread، و map و filter، والـ promises و async/await. دول هتستخدمهم في كل سطر React تقريباً.
-
-بعد كده ادخل على React بمشروع صغير حقيقي، مش tutorial وخلاص. مشروع زي تطبيق طقس أو قائمة مهام، تتعلم فيه الـ components والـ props والـ state والـ effects وإنت بتحل مشكلة فعلية.
-
-لما تتمكن من الأساسيات، اتعلم إزاي تجيب داتا من API بطريقة صح باستخدام React Query، وإزاي تدير الـ state المشتركة بمكتبة بسيطة زي Zustand.
-
-وفي الآخر: ارفع كل مشروع live، وحط اللينك في البورتفوليو. المشروع اللي محدش يقدر يفتحه، كأنه مش موجود.`,
-    thumbnail: "https://picsum.photos/seed/react/1200/630",
-    created_at: "5 أكتوبر 2026",
-    category: { id: 1, title: "برمجة" },
-    author: { display_name: "عبدالله محسن" },
-}
-
-const relatedArticles = [
-    {
-        id: 6,
-        title: "React Query: ليه مش محتاج useEffect عشان تجيب داتا",
-        description: "الكاش، وإعادة المحاولة، وحالات التحميل والخطأ، وإزاي React Query بيحل مشاكل كتير لوحده.",
-        thumbnail: "https://picsum.photos/seed/query/800/450",
-        created_at: "15 سبتمبر 2026",
-        category: { id: 1, title: "برمجة" },
-        author: { display_name: "محمد علي" },
-    },
-    {
-        id: 7,
-        title: "TypeScript للمبتدئين: الأنواع اللي هتستخدمها كل يوم",
-        description: "string و number و union types و generics، بأمثلة صغيرة من مشاريع React حقيقية.",
-        thumbnail: "https://picsum.photos/seed/typescript/800/450",
-        created_at: "10 سبتمبر 2026",
-        category: { id: 1, title: "برمجة" },
-        author: { display_name: "سارة أحمد" },
-    },
-    {
-        id: 8,
-        title: "Git من الصفر: الأوامر اللي محتاجها فعلاً",
-        description: "init و add و commit و push و branch، وإزاي ترجع لو حاجة باظت من غير ما تخسر شغلك.",
-        thumbnail: "https://picsum.photos/seed/git/800/450",
-        created_at: "3 سبتمبر 2026",
-        category: { id: 1, title: "برمجة" },
-        author: { display_name: "عبدالله محسن" },
-    },
-]
+import { useArticle } from "../hooks/useArticle"
+import { formatDate } from "../utils/formatDate"
+import { ArticleDetailsSkeleton } from "../components/skeletons/ArticleDetailsSkeleton"
+import { useRelatedArticles } from "../hooks/useRelatedArticles"
 
 export const Article = () => {
-    const isOwner = true // static: later, compare article.author_id with the logged-in user's id
+    const { id } = useParams()
+    const { data: article, isLoading, isError, refetch } = useArticle(Number(id))
+    const { data: relatedArticles} = useRelatedArticles(article?.category.id, Number(id))
+
+    if (isLoading) return <ArticleDetailsSkeleton />
+    if (isError) return <div className="text-center text-lg mt-24">حدث خطأ في تحميل المقال <br />
+        <button onClick={() => refetch()} className="text-primary font-semibold underline">حاول مرة اخرى</button>
+    </div>
+    if (!article) return <p className="text-center text-lg mt-24">المقال غير موجود <br />  <Link to="/blog" className="text-primary font-semibold underline">الرجوع للمدونة</Link> </p>
+
+
+
+
+    const isOwner = false // static: later, compare article.author_id with the logged-in user's id
 
     return (
         <>
@@ -79,7 +46,7 @@ export const Article = () => {
                         </span>
                         <div>
                             <p className="font-semibold">{article.author.display_name}</p>
-                            <time dateTime={article.created_at} className="text-sm text-gray-500">{article.created_at}</time>
+                            <time dateTime={article.created_at} className="text-sm text-gray-500">{formatDate(article.created_at)}</time>
                         </div>
                     </div>
 
@@ -115,14 +82,17 @@ export const Article = () => {
             </article>
 
             {/* Related articles */}
-            <section className="mt-16">
-                <h2 className="text-2xl font-bold mb-6">مقالات مشابهة</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {relatedArticles.map((related) => (
-                        <ArticleCard key={related.id} article={related} />
-                    ))}
-                </div>
-            </section>
+            {relatedArticles && relatedArticles.length > 0 && (
+                <section className="mt-16">
+                    <h2 className="text-2xl font-bold mb-6">مقالات مشابهة</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {relatedArticles.map((related) => (
+                            <ArticleCard key={related.id} article={related} />
+                        ))}
+
+                    </div>
+                </section>
+            )}
         </>
     )
 }

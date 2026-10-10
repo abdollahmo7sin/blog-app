@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase"
-import type { Article } from "../types/article"
+import type { Article, ArticleDetails } from "../types/article"
+import type { Category } from "../types/category"
 
 export interface GetArticlesParams {
 
@@ -28,4 +29,31 @@ export const getArticles = async (params?: GetArticlesParams) => {
     const { data, count, error } = await query
     if (error) throw error
     return { articles: data as unknown as Article[], total: count ?? 0 }
+}
+
+
+export const getArticle = async (id: number) => {
+    const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, description, thumbnail, content, created_at, category:categories(id, title), author:profiles(display_name)")
+        .eq("id", id).maybeSingle()
+    if (error) throw error
+    return data as unknown as ArticleDetails | null
+}
+
+
+
+
+export const getRelatedArticles = async (categoryId: number, articleId: number) => {
+
+    const { data, error } = await supabase
+        .from('articles')
+        .select("id, title, description, thumbnail, created_at, category:categories(id, title), author:profiles(display_name)")
+        .order("created_at", { ascending: false })
+        .eq('category_id', categoryId)
+        .neq('id', articleId)
+        .limit(3)
+    if (error) throw error
+    return data as unknown as Article[]
+
 }

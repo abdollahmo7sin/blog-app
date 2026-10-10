@@ -9,3 +9,7 @@ export type Article = {
     category: Category
     author: { display_name: string }
 }
+
+export type ArticleDetails = Article & {
+    content: string
+}
