@@ -1,20 +1,9 @@
 import { Link } from "react-router"
+import type { Article } from "../types/article"
+import { formatDate } from "../utils/formatDate"
 
-// Static for now: this shape matches what Supabase will return later
-// when articles are joined with their category and author.
-type ArticleCardProps = {
-    article: {
-        id: number
-        title: string
-        description: string
-        thumbnail: string
-        created_at: string
-        category: { id: number; title: string }
-        author: { display_name: string }
-    }
-}
 
-export const ArticleCard = ({ article }: ArticleCardProps) => {
+export const ArticleCard = ({ article }: { article: Article }) => {
     return (
         <article className="group bg-white border border-line rounded-2xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
             <Link to={`/blog/${article.id}`} className="block aspect-video overflow-hidden bg-line">
@@ -48,7 +37,7 @@ export const ArticleCard = ({ article }: ArticleCardProps) => {
                         </span>
                         <span>{article.author.display_name}</span>
                     </div>
-                    <time dateTime={article.created_at}>{article.created_at}</time>
+                    <time dateTime={article.created_at}>{formatDate(article.created_at)}</time>
                 </div>
             </div>
         </article>

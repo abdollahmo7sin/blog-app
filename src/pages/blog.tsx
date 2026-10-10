@@ -2,21 +2,24 @@ import { ArticleCard } from "../components/ArticleCard"
 import { Pagination } from "../components/Pagination"
 import { useArticles } from "../hooks/useArticles"
 import { useCategories } from "../hooks/useCategories"
-import { useState } from "react"
 import { ArticleCardSkeleton } from "../components/skeletons/ArticleCardSkeleton"
+import { useSearchParams } from "react-router"
 
 
 
 
 export const Blog = () => {
     const LIMIT = 6;
-    const [page, setPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeCategory = Number(searchParams.get("category")) || null
+    const rawPage = Number(searchParams.get("page")) || 1
+    const page = rawPage < 1 ? 1 : rawPage
     const { data: categories, isError, isLoading } = useCategories()
-    const { data, isError: isArticlesError, isLoading: isArticlesLoading } = useArticles({ page, limit: LIMIT })
+    const { data, isError: isArticlesError, isLoading: isArticlesLoading } = useArticles({ page, limit: LIMIT, categoryId: activeCategory })
     const articles = data?.articles;
+
     const totalPages = Math.ceil((data?.total ?? 0) / LIMIT)
 
-    const activeCategory = null as number | null // static: will come from the URL search params
 
     return (
         <section>
@@ -27,7 +30,9 @@ export const Blog = () => {
 
             {/* Category filter */}
             <div className="flex flex-wrap gap-2 items-center mb-8">
-                <button className={`rounded-xl cursor-pointer px-4 py-2.5 ${activeCategory === null ? "bg-primary text-white" : "bg-white text-ink border border-line hover:border-primary"}`}>
+                <button
+                    onClick={() => setSearchParams({})}
+                    className={`rounded-xl cursor-pointer px-4 py-2.5 ${activeCategory === null ? "bg-primary text-white" : "bg-white text-ink border border-line hover:border-primary"}`}>
                     الكل
                 </button>
                 {isLoading && (
@@ -41,6 +46,7 @@ export const Blog = () => {
                 {isError && <div className="text-center">...حدث خطأ</div>}
                 {categories?.map((cat) => (
                     <button
+                        onClick={() => setSearchParams({ category: String(cat.id), page: "1" })}
                         key={cat.id}
                         className={`rounded-xl cursor-pointer px-4 py-2.5 ${activeCategory === cat.id ? "bg-primary text-white" : "bg-white text-ink border border-line hover:border-primary"}`}
                     >
@@ -60,7 +66,9 @@ export const Blog = () => {
                 ))}
             </div>
 
-            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+            <Pagination page={page} totalPages={totalPages} onChange={(newPage) => {
+                setSearchParams(prev => { prev.set('page', String(newPage)); return prev })
+            }} />
         </section>
     )
 }
