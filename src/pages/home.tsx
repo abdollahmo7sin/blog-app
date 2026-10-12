@@ -1,58 +1,13 @@
 import { Link } from "react-router"
 import { ArticleCard } from "../components/ArticleCard"
+import { useHomeSections } from "../hooks/useHomeSections"
+import { ArticleCardSkeleton } from "../components/skeletons/ArticleCardSkeleton"
 
-// Static data: later, getCategories + one useArticles query per category (useQueries + combine),
-// each limited to 4 articles. This shape is what that combine will return.
-const titlesByCategory: Record<number, string[]> = {
-    1: [
-        "ازاي تبدأ تتعلم React في 2026 من غير ما تتوه",
-        "React Query: ليه مش محتاج useEffect عشان تجيب داتا",
-        "TypeScript للمبتدئين: الأنواع اللي هتستخدمها كل يوم",
-        "Git من الصفر: الأوامر اللي محتاجها فعلاً",
-    ],
-    2: [
-        "أساسيات تصميم واجهات عربية من اليمين للشمال",
-        "Tailwind CSS: نظام ألوان وخطوط في ملف واحد",
-        "إزاي تختار خط عربي مريح للقراءة",
-        "المسافات البيضاء: سر التصميم النضيف",
-    ],
-    3: [
-        "يعني إيه Backend as a Service؟ ولما تستخدم Supabase",
-        "ازاي ترفع مشروعك على Vercel في 5 دقايق",
-        "الذكاء الاصطناعي في البرمجة: مساعد مش بديل",
-        "يعني إيه API؟ شرح بمثال من الحياة",
-    ],
-    4: [
-        "إزاي تجهز نفسك لأول إنترفيو Frontend",
-        "البورتفوليو: 3 مشاريع أحسن من 20 tutorial",
-        "إزاي تكتب CV مبرمج يتقري في 10 ثواني",
-        "العمل remote: إزاي تلاقي أول شغلانة",
-    ],
-}
 
-const categories = [
-    { id: 1, title: "برمجة" },
-    { id: 2, title: "تصميم" },
-    { id: 3, title: "تقنية" },
-    { id: 4, title: "مسيرة مهنية" },
-]
 
-const authors = ["عبدالله محسن", "سارة أحمد", "محمد علي"]
-
-const sections = categories.map((category) => ({
-    category,
-    articles: titlesByCategory[category.id].map((title, i) => ({
-        id: category.id * 10 + i,
-        title,
-        description: "ملخص قصير للمقال بيظهر في الكارت، بيقول للقارئ المقال بيتكلم عن إيه قبل ما يفتحه.",
-        thumbnail: `https://picsum.photos/seed/blog-${category.id}-${i}/800/450`,
-        created_at: `${20 - i * 3} سبتمبر 2026`,
-        category,
-        author: { display_name: authors[i % authors.length] },
-    })),
-}))
 
 export const Home = () => {
+    const { sections, isLoading, isError } = useHomeSections()
     return (
         <>
             {/* Hero */}
@@ -80,25 +35,48 @@ export const Home = () => {
             </section>
 
             {/* One section per category */}
-            {sections.map(({ category, articles }) => (
-                <section key={category.id} className="mt-16">
+            {isLoading &&
+                <section className="mt-16">
                     <div className="flex items-end justify-between gap-4 mb-6">
-                        <h2 className="text-2xl font-bold">{category.title}</h2>
-                        <Link
-                            to={`/blog?category=${category.id}`}
-                            className="text-sm font-semibold text-primary hover:text-ink transition-colors shrink-0"
-                        >
-                            عرض الكل ←
-                        </Link>
+                        <h2 className="text-2xl font-bold bg-gray-200 w-32 h-8 rounded animate-pulse"></h2>
+                        <span className="bg-gray-200 w-24 h-6 rounded animate-pulse"></span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {articles.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))}
+
+                        <ArticleCardSkeleton count={4} />
+
                     </div>
                 </section>
-            ))}
+            }
+
+            {
+                isError && (
+                    <p className="text-red-500 text-center">حدث خطأ في تحميل المقالات</p>
+                )
+            }
+
+            {
+                sections.filter((s) => s.articles.length > 0)?.map(({ category, articles }) => (
+                    <section key={category.id} className="mt-16">
+                        <div className="flex items-end justify-between gap-4 mb-6">
+                            <h2 className="text-2xl font-bold">{category.title}</h2>
+                            <Link
+                                to={`/blog?category=${category.id}`}
+                                className="text-sm font-semibold text-primary hover:text-ink transition-colors shrink-0"
+                            >
+                                عرض الكل ←
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {articles.map((article) => (
+                                <ArticleCard key={article.id} article={article} />
+                            ))}
+                        </div>
+                    </section>
+                ))
+            }
         </>
     )
 }
