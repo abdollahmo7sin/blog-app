@@ -57,7 +57,7 @@ export const Home = () => {
             }
 
             {
-                sections.filter((s) => s.articles.length > 0)?.map(({ category, articles }) => (
+                sections.filter((s) => s.articles.length > 0).map(({ category, articles }) => (
                     <section key={category.id} className="mt-16">
                         <div className="flex items-end justify-between gap-4 mb-6">
                             <h2 className="text-2xl font-bold">{category.title}</h2>

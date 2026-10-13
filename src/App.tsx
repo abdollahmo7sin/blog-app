@@ -3,6 +3,8 @@ import { RootLayout } from "./layouts/RootLayout"
 import { Home } from "./pages/home"
 import { Blog } from "./pages/blog"
 import { Article } from "./pages/article"
+import { Login } from "./pages/login"
+import { Register } from "./pages/register"
 
 function App() {
 
@@ -12,6 +14,8 @@ function App() {
         <Route index element={<Home />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:id" element={<Article />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
     </Routes>
   )

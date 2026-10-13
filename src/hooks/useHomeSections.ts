@@ -3,7 +3,7 @@ import { getArticles } from "../services/articles";
 import { useCategories } from "./useCategories";
 
 export const useHomeSections = () => {
-    const { data: categories, isLoading } = useCategories()
+    const { data: categories, isLoading, isError } = useCategories()
 
     return useQueries({
         queries: (categories ?? []).map((category) => ({
@@ -13,7 +13,7 @@ export const useHomeSections = () => {
         combine: (results) => {
             return {
                 isLoading: results.some((result) => result.isLoading) || isLoading,
-                isError: results.some((result) => result.isError),
+                isError: results.some((result) => result.isError) || isError,
                 sections: (categories ?? []).map((category, i) => ({
                     category,
                     articles: results[i]?.data?.articles ?? [],
