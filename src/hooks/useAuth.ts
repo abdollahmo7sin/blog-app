@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { register as registerService, login as loginService } from "../services/auth"
+import { register as registerService, login as loginService, logout as logoutService } from "../services/auth"
 import type { RegisterSchema, LoginSchema } from "../schemas/authSchemas"
 
 export const useRegister = () => {
@@ -18,4 +18,12 @@ export const useLogin = () => {
     })
 
     return login
+}
+
+export const useLogout = () => {
+    const logout = useMutation({
+        mutationFn: () => logoutService()
+    })
+
+    return logout
 }

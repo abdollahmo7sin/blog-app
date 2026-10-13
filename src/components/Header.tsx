@@ -1,12 +1,17 @@
 import { useState } from "react"
 import { Link, NavLink } from "react-router"
+import { useAuthStore } from "../stores/authStore"
+import { useLogout } from "../hooks/useAuth"
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `block py-2 md:py-0 transition-colors ${isActive ? "text-primary font-semibold" : "text-ink hover:text-primary"}`
 
 export const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false)
-
+    const { user, isLoading } = useAuthStore()
+    const { mutate: logout } = useLogout()
+    const isLoggedIn = !!user
+    const displayName = user?.user_metadata.display_name
     return (
         <header className="bg-white/90 backdrop-blur border-b border-line sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-6">
@@ -34,10 +39,32 @@ export const Header = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Static: logged-out state. Later: show the user's name + logout when logged in */}
-                    <Link to="/login" className="hidden sm:block text-sm hover:text-primary transition-colors">
-                        تسجيل الدخول
-                    </Link>
+                    {isLoading ? (
+                        <div className="hidden sm:flex items-center gap-3">
+                            <div className="animate-pulse bg-gray-200 rounded-full h-8 w-8"></div>
+                            <div className="animate-pulse bg-gray-200 rounded-full h-8 w-32"></div>
+                        </div>
+                    ) : isLoggedIn ? (
+                        <div className="hidden sm:flex items-center gap-3">
+                            <span className="flex items-center gap-2 text-sm font-medium">
+                                <span className="size-8 rounded-full bg-accent text-ink flex items-center justify-center font-semibold" aria-hidden="true">
+                                    {displayName.charAt(0)}
+                                </span>
+                                {displayName}
+                            </span>
+                            <button
+                                onClick={() => logout()}
+                                type="button"
+                                className="text-sm text-gray-500 hover:text-red-700 transition-colors cursor-pointer"
+                            >
+                                خروج
+                            </button>
+                        </div>
+                    ) : (
+                        <Link to="/login" className="hidden sm:block text-sm hover:text-primary transition-colors">
+                            تسجيل الدخول
+                        </Link>
+                    )}
                     <Link to="/articles/new" className="bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-ink transition-colors">
                         اكتب مقال
                     </Link>

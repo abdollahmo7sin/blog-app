@@ -5,6 +5,7 @@ import { Blog } from "./pages/blog"
 import { Article } from "./pages/article"
 import { Login } from "./pages/login"
 import { Register } from "./pages/register"
+import { GuestRoute } from "./components/GuestRoute"
 
 function App() {
 
@@ -14,8 +15,10 @@ function App() {
         <Route index element={<Home />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:id" element={<Article />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<GuestRoute />} >
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
       </Route>
     </Routes>
   )
