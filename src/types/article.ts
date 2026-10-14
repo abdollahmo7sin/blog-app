@@ -13,3 +13,11 @@ export type Article = {
 export type ArticleDetails = Article & {
     content: string
 }
+
+export type ArticlePayload = {
+    title: string
+    description: string
+    content: string
+    category_id: number
+    thumbnail: string
+}

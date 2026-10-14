@@ -21,12 +21,12 @@ export const ArticleForm = () => {
             title: "",
             description: "",
             content: "",
-            thumbnail: "",
             category_id: ""
         }
     })
     const thumbnail = watch("thumbnail")
-    const { mutate: createArticle, isPending } = useCreateArticle()
+    const previewUrl = thumbnail?.[0] ? URL.createObjectURL(thumbnail[0]) : ""
+    const { mutate: createArticle, isPending, isError } = useCreateArticle()
     const navigate = useNavigate()
 
     const isEdit = false // static: true when the route has an :id (/articles/:id/edit)
@@ -76,45 +76,60 @@ export const ArticleForm = () => {
                     {errors.description && <p id="descriptionError" className="text-sm text-red-700 mt-1.5">{errors.description.message}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label htmlFor="category_id" className={labelClass}>التصنيف</label>
-                        <select
-                            id="category_id"
-                            aria-describedby="categoryError"
-                            className={`${inputClass} cursor-pointer`}
-                            {...register("category_id")}
-                        >
-                            <option value="" disabled>اختار تصنيف</option>
-                            {categories?.map((category) => (
-                                <option key={category.id} value={category.id}>{category.title}</option>
-                            ))}
-                        </select>
-                        {errors.category_id && <p id="categoryError" className="text-sm text-red-700 mt-1.5">{errors.category_id.message}</p>}
-                    </div>
-
-                    <div>
-                        <label htmlFor="thumbnail" className={labelClass}>رابط الصورة</label>
-                        <input
-                            id="thumbnail"
-                            type="url"
-                            dir="ltr"
-                            placeholder="https://..."
-                            aria-describedby="thumbnailError"
-                            className={`${inputClass} text-end`}
-                            {...register("thumbnail")}
-                        />
-                        {errors.thumbnail && <p id="thumbnailError" className="text-sm text-red-700 mt-1.5">{errors.thumbnail.message}</p>}
-                    </div>
+                <div className="md:w-1/2">
+                    <label htmlFor="category_id" className={labelClass}>التصنيف</label>
+                    <select
+                        id="category_id"
+                        aria-describedby="categoryError"
+                        className={`${inputClass} cursor-pointer`}
+                        {...register("category_id")}
+                    >
+                        <option value="" disabled>اختار تصنيف</option>
+                        {categories?.map((category) => (
+                            <option key={category.id} value={category.id}>{category.title}</option>
+                        ))}
+                    </select>
+                    {errors.category_id && <p id="categoryError" className="text-sm text-red-700 mt-1.5">{errors.category_id.message}</p>}
                 </div>
 
-                {thumbnail && (
-                    <img
-                        src={thumbnail}
-                        alt=""
-                        className="w-full aspect-video object-cover rounded-xl bg-line"
-                    />
-                )}
+                <div>
+                    <span className={labelClass}>صورة المقال</span>
+
+                    <label
+                        htmlFor="thumbnail"
+                        className="group relative block cursor-pointer rounded-xl border-2 border-dashed border-line bg-paper overflow-hidden transition-colors hover:border-primary focus-within:border-primary"
+                    >
+                        <input
+                            id="thumbnail"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            aria-describedby="thumbnailError"
+                            className="sr-only"
+                            {...register("thumbnail")}
+                        />
+
+                        {previewUrl ? (
+                            <>
+                                <img src={previewUrl} alt="" className="w-full aspect-video object-cover" />
+                                <span className="absolute inset-0 flex items-center justify-center bg-ink/50 text-white font-semibold opacity-0 transition-opacity group-hover:opacity-100">
+                                    تغيير الصورة
+                                </span>
+                            </>
+                        ) : (
+                            <span className="flex flex-col items-center justify-center gap-3 aspect-video text-center px-6">
+                                <span className="size-12 rounded-2xl bg-primary-soft text-primary flex items-center justify-center" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                    </svg>
+                                </span>
+                                <span className="font-semibold text-ink">اضغط عشان تختار صورة</span>
+                                <span className="text-xs text-gray-500">JPG أو PNG أو WEBP، وحجمها أقل من 2MB</span>
+                            </span>
+                        )}
+                    </label>
+
+                    {errors.thumbnail && <p id="thumbnailError" className="text-sm text-red-700 mt-1.5">{errors.thumbnail.message}</p>}
+                </div>
 
                 <div>
                     <label htmlFor="content" className={labelClass}>المحتوى</label>
@@ -129,10 +144,11 @@ export const ArticleForm = () => {
                     {errors.content && <p id="contentError" className="text-sm text-red-700 mt-1.5">{errors.content.message}</p>}
                 </div>
 
-                {/* Static: show only when the mutation fails */}
-                {/* <div role="alert" className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-                    حصلت مشكلة في حفظ المقال، حاول تاني
-                </div> */}
+                {isError && (
+                    <div role="alert" className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+                        "حصلت مشكلة في حفظ المقال، حاول تاني"
+                    </div>
+                )}
 
                 <div className="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-line">
                     <Link

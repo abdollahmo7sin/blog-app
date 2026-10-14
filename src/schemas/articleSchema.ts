@@ -5,7 +5,7 @@ export const articleSchema = z.object({
     description: z.string().min(1, "الوصف مطلوب"),
     content: z.string().min(1, "المحتوى مطلوب"),
     category_id: z.coerce.number().positive("التصنيف مطلوب"),
-    thumbnail: z.url("رابط الصورة غير صالح"),
+    thumbnail: z.instanceof(FileList).refine(files => files.length > 0, "الصورة مطلوبة").refine(files => files[0]?.size < 1024 * 1024 * 2, "الصورة أكبر من 2 ميجا").refine(files => ["image/jpeg", "image/png", "image/webp"].includes(files[0]?.type), "الصورة غير مدعومة"),
 
 })
 

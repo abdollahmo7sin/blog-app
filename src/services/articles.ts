@@ -1,6 +1,5 @@
 import { supabase } from "../lib/supabase"
-import type { ArticleInput } from "../schemas/articleSchema"
-import type { Article, ArticleDetails } from "../types/article"
+import type { Article, ArticleDetails, ArticlePayload } from "../types/article"
 
 export interface GetArticlesParams {
 
@@ -59,7 +58,7 @@ export const getRelatedArticles = async (categoryId: number, articleId: number) 
 }
 
 
-export const createArticle = async (author_id: string, article: ArticleInput) => {
+export const createArticle = async (author_id: string, article: ArticlePayload) => {
     const { data, error } = await supabase
         .from("articles")
         .insert({ ...article, author_id }).select("id").single()
