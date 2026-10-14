@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase"
+import type { ArticleInput } from "../schemas/articleSchema"
 import type { Article, ArticleDetails } from "../types/article"
-import type { Category } from "../types/category"
 
 export interface GetArticlesParams {
 
@@ -56,4 +56,13 @@ export const getRelatedArticles = async (categoryId: number, articleId: number) 
     if (error) throw error
     return data as unknown as Article[]
 
+}
+
+
+export const createArticle = async (author_id: string, article: ArticleInput) => {
+    const { data, error } = await supabase
+        .from("articles")
+        .insert({ ...article, author_id }).select("id").single()
+    if (error) throw error
+    return data  
 }

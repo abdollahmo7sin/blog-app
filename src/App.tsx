@@ -6,6 +6,8 @@ import { Article } from "./pages/article"
 import { Login } from "./pages/login"
 import { Register } from "./pages/register"
 import { GuestRoute } from "./components/GuestRoute"
+import { ProtectedRoute } from "./components/ProtectedRoute"
+import { ArticleForm } from "./pages/articleForm"
 
 function App() {
 
@@ -18,6 +20,10 @@ function App() {
         <Route element={<GuestRoute />} >
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+        </Route>
+        <Route element={<ProtectedRoute />} >
+          <Route path="/articles/new" element={<ArticleForm />} />
+          <Route path="/articles/:id/edit" element={<ArticleForm />} />
         </Route>
       </Route>
     </Routes>
