@@ -10,3 +10,10 @@ export const articleSchema = z.object({
 })
 
 export type ArticleInput = z.infer<typeof articleSchema>
+
+
+export const editArticleSchema = articleSchema.extend({
+    thumbnail: z.instanceof(FileList)
+        .refine(files => files.length === 0 || (files[0] && files[0]?.size < 1024 * 1024 * 2), "الصورة أكبر من 2 ميجا")
+        .refine(files => !files[0] || ["image/jpeg", "image/png", "image/webp"].includes(files[0]?.type), "الصورة غير مدعومة"),
+})

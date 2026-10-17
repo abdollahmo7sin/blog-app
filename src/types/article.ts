@@ -11,7 +11,8 @@ export type Article = {
 }
 
 export type ArticleDetails = Article & {
-    content: string
+    content: string,
+    author_id: string
 }
 
 export type ArticlePayload = {

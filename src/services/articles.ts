@@ -34,7 +34,7 @@ export const getArticles = async (params?: GetArticlesParams) => {
 export const getArticle = async (id: number) => {
     const { data, error } = await supabase
         .from("articles")
-        .select("id, title, description, thumbnail, content, created_at, category:categories(id, title), author:profiles(display_name)")
+        .select("id, title, description, thumbnail, content, created_at, category:categories(id, title), author:profiles(display_name),author_id")
         .eq("id", id).maybeSingle()
     if (error) throw error
     return data as unknown as ArticleDetails | null
@@ -63,5 +63,13 @@ export const createArticle = async (author_id: string, article: ArticlePayload) 
         .from("articles")
         .insert({ ...article, author_id }).select("id").single()
     if (error) throw error
-    return data  
+    return data
+}
+
+export const updateArticle = async (id: number, article: ArticlePayload) => {
+    const { data, error } = await supabase
+        .from("articles")
+        .update(article).eq("id", id).select("id").single()
+    if (error) throw error
+    return data
 }

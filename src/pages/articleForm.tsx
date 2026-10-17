@@ -1,10 +1,13 @@
-import { Link, useNavigate } from "react-router"
+import { Link, Navigate, useNavigate, useParams } from "react-router"
 import { useCreateArticle } from "../hooks/useCreateArticle"
+import { useUpdateArticle } from "../hooks/useUpdateArticle"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { articleSchema, type ArticleInput } from "../schemas/articleSchema"
+import { articleSchema, editArticleSchema, type ArticleInput } from "../schemas/articleSchema"
 import { useAuthStore } from "../stores/authStore"
 import { useCategories } from "../hooks/useCategories"
+import { useArticle } from "../hooks/useArticle"
+import { useEffect } from "react"
 
 const inputClass = "w-full bg-white border border-line rounded-xl px-4 py-3 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15 aria-invalid:border-red-500"
 const labelClass = "block text-sm font-medium mb-1.5"
@@ -13,10 +16,13 @@ const labelClass = "block text-sm font-medium mb-1.5"
 
 
 export const ArticleForm = () => {
+    const { id } = useParams()
+    const isEdit = !!id
+    const { data: article, isLoading: articleLoading } = useArticle(id ? Number(id) : undefined)
     const user = useAuthStore(s => s.user)
     const { data: categories, isLoading } = useCategories()
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
-        resolver: zodResolver(articleSchema),
+    const { register, handleSubmit, watch, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(isEdit ? editArticleSchema : articleSchema),
         defaultValues: {
             title: "",
             description: "",
@@ -24,20 +30,53 @@ export const ArticleForm = () => {
             category_id: ""
         }
     })
+    useEffect(() => {
+        if (article) {
+            reset({
+                title: article.title,
+                description: article.description,
+                content: article.content,
+                category_id: String(article.category.id),
+            })
+        }
+    }, [article])
     const thumbnail = watch("thumbnail")
-    const previewUrl = thumbnail?.[0] ? URL.createObjectURL(thumbnail[0]) : ""
-    const { mutate: createArticle, isPending, isError } = useCreateArticle()
-    const navigate = useNavigate()
+    const previewUrl =
+        thumbnail?.[0] ? URL.createObjectURL(thumbnail[0])
+            : isEdit ? article?.thumbnail
+                : ""
+    const { mutate: createArticle, isPending: createPending, isError: createError } = useCreateArticle()
+    const { mutate: updateArticle, isPending: updatePending, isError: updateError } = useUpdateArticle()
+    const isPending = createPending || updatePending
+    const isError = createError || updateError
 
-    const isEdit = false // static: true when the route has an :id (/articles/:id/edit)
+    const navigate = useNavigate()
 
     const onSubmit = (data: ArticleInput) => {
         if (!user) return
-        createArticle({ author_id: user.id, article: data }, {
-            onSuccess: (data) => {
-                navigate(`/blog/${data.id}`)
-            }
-        })
+        if (isEdit && article) {
+            updateArticle({ id: Number(id), author_id: user.id, formData: data, oldThumbnail: article.thumbnail }, {
+                onSuccess: (data) => {
+                    navigate(`/blog/${data.id}`)
+                }
+            })
+        } else {
+            createArticle({ author_id: user.id, article: data }, {
+                onSuccess: (data) => {
+                    navigate(`/blog/${data.id}`)
+                }
+            })
+        }
+    }
+    if (articleLoading && isEdit) {
+        return <div className="flex items-center justify-center min-h-[300px]"><p className="text-center">جاري التحميل...</p></div>
+    }
+    if (isEdit && !article) {
+        return <Navigate to="/blog" replace />
+    }
+
+    if (article && isEdit && article.author_id !== user?.id) {
+        return <Navigate to={`/blog/${id}`} replace />
     }
     return (
         <section className="max-w-3xl mx-auto">

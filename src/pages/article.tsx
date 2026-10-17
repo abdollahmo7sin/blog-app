@@ -4,11 +4,13 @@ import { useArticle } from "../hooks/useArticle"
 import { formatDate } from "../utils/formatDate"
 import { ArticleDetailsSkeleton } from "../components/skeletons/ArticleDetailsSkeleton"
 import { useRelatedArticles } from "../hooks/useRelatedArticles"
+import { useAuthStore } from "../stores/authStore"
 
 export const Article = () => {
     const { id } = useParams()
     const { data: article, isLoading, isError, refetch } = useArticle(Number(id))
-    const { data: relatedArticles} = useRelatedArticles(article?.category.id, Number(id))
+    const { data: relatedArticles } = useRelatedArticles(article?.category.id, Number(id))
+    const user = useAuthStore((state) => state.user)
 
     if (isLoading) return <ArticleDetailsSkeleton />
     if (isError) return <div className="text-center text-lg mt-24">حدث خطأ في تحميل المقال <br />
@@ -16,10 +18,7 @@ export const Article = () => {
     </div>
     if (!article) return <p className="text-center text-lg mt-24">المقال غير موجود <br />  <Link to="/blog" className="text-primary font-semibold underline">الرجوع للمدونة</Link> </p>
 
-
-
-
-    const isOwner = false // static: later, compare article.author_id with the logged-in user's id
+    const isOwner = user?.id === article.author_id
 
     return (
         <>
