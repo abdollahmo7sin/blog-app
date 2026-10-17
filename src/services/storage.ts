@@ -12,3 +12,12 @@ export const uploadThumbnail = async (file: File, userId: string) => {
 
 }
 
+export const deleteThumbnail = async (url: string) => {
+    if (!url) return
+    const fileName = url.split("/thumbnails/")[1]
+    if (!fileName) return
+    const { error } = await supabase.storage
+        .from("thumbnails")
+        .remove([fileName])
+    if (error) throw error
+}

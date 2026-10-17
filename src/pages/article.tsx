@@ -1,17 +1,30 @@
-import { useParams, Link } from "react-router"
+import { useParams, Link, useNavigate } from "react-router"
 import { ArticleCard } from "../components/ArticleCard"
 import { useArticle } from "../hooks/useArticle"
 import { formatDate } from "../utils/formatDate"
 import { ArticleDetailsSkeleton } from "../components/skeletons/ArticleDetailsSkeleton"
 import { useRelatedArticles } from "../hooks/useRelatedArticles"
 import { useAuthStore } from "../stores/authStore"
+import { useDeleteArticle } from "../hooks/useDeleteArticle"
 
 export const Article = () => {
     const { id } = useParams()
     const { data: article, isLoading, isError, refetch } = useArticle(Number(id))
     const { data: relatedArticles } = useRelatedArticles(article?.category.id, Number(id))
     const user = useAuthStore((state) => state.user)
+    const { mutate: deleteArticle, isPending: isDeleting } = useDeleteArticle()
+    const navigate = useNavigate()
+    const handleDelete = () => {
+        if (window.confirm("هل انت متاكد من حذف المقال؟")) {
 
+            deleteArticle({ id: Number(id), thumbnail: article.thumbnail }, {
+                onSuccess: () => {
+                    navigate(`/blog`)
+                }
+            })
+
+        }
+    }
     if (isLoading) return <ArticleDetailsSkeleton />
     if (isError) return <div className="text-center text-lg mt-24">حدث خطأ في تحميل المقال <br />
         <button onClick={() => refetch()} className="text-primary font-semibold underline">حاول مرة اخرى</button>
@@ -59,10 +72,12 @@ export const Article = () => {
                                 تعديل
                             </Link>
                             <button
+                                onClick={handleDelete}
+                                disabled={isDeleting}
                                 type="button"
-                                className="text-sm font-semibold px-4 py-2 rounded-xl border border-red-200 bg-white text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                                className="text-sm font-semibold px-4 py-2 rounded-xl border border-red-200 bg-white text-red-700 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                حذف
+                                {isDeleting ? "جاري الحذف..." : "حذف"}
                             </button>
                         </div>
                     )}

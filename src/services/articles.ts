@@ -73,3 +73,11 @@ export const updateArticle = async (id: number, article: ArticlePayload) => {
     if (error) throw error
     return data
 }
+
+export const deleteArticle = async (id: number) => {
+    const { error } = await supabase
+        .from("articles")
+        .delete()
+        .eq("id", id)
+    if (error) throw error
+}
