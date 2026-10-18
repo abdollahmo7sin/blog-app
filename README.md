@@ -1,78 +1,90 @@
-# React + TypeScript + Vite
+# ✍️ مدونتي — Arabic Blog Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack Arabic (RTL) blog where users can sign up, write articles with cover images, and manage their own posts. It's built with React + TypeScript on top of Supabase (Postgres, Auth and Storage).
 
-Currently, two official plugins are available:
+**🔗 Live demo:** [blog-app-fawn-eight-13.vercel.app](https://blog-app-fawn-eight-13.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Blog home page with a hero section and articles grouped by category](./screenshot.png)
 
-## React Compiler
+## Features
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- 🔐 **Authentication**: register, login and logout with Supabase Auth. The session survives a page refresh.
+- 📝 **Full CRUD for articles**: create, edit and delete. Only the author sees the edit and delete buttons.
+- 🖼️ **Image upload**: cover images go to Supabase Storage, with a preview before upload and size/type validation.
+- 🛡️ **Row Level Security**: the database itself only lets authors change their own articles and images. Route guards in the UI are just for UX.
+- 🗂️ **Blog page**: category filter and pagination, both kept in the URL (`?category=2&page=3`) so links are shareable.
+- 🏠 **Home page**: the latest articles from every category, fetched in parallel.
+- 📄 **Article page**: related articles from the same category.
+- 👤 **My articles**: a dashboard of your own posts, with per-row delete state.
+- ✅ **Forms**: validated with React Hook Form + Zod, with Arabic error messages.
+- ⚡ **Caching**: React Query caches data and refreshes it automatically after any create, edit or delete.
+- ⏳ **Loading states**: skeletons, empty states and error states with retry.
+- 📱 **Responsive**: works from mobile to desktop.
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+## Tech Stack
 
-## Expanding the ESLint configuration
+- [React 19](https://react.dev/) (with the React Compiler) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/) + [Tailwind CSS 4](https://tailwindcss.com/)
+- [React Router](https://reactrouter.com/)
+- [TanStack Query](https://tanstack.com/query): server state, caching and mutations
+- [Zustand](https://zustand.docs.pmnd.rs/): auth state
+- [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/): forms and validation
+- [Supabase](https://supabase.com/): Postgres, Auth, Storage and RLS
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Database
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Table        | Columns                                                                                   |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| `profiles`   | `id` (→ `auth.users`), `username`, `display_name`, `created_at`                           |
+| `categories` | `id`, `title`                                                                             |
+| `articles`   | `id`, `title`, `description`, `content`, `thumbnail`, `category_id`, `author_id`, `created_at` |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- A Postgres trigger creates the `profiles` row automatically on sign-up.
+- Anyone can read articles. Only the author can insert, update or delete their own.
+- Images live in a public `thumbnails` bucket, in one folder per user (`<user_id>/<file>`). Storage policies only allow uploads and deletes inside your own folder.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
 
-```
+1. Create a Supabase project, then create the tables and policies above.
+2. Add a `.env.local` file in the project root:
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+   ```bash
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Run it:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+   ```bash
+   npm install
+   npm run dev      # start the dev server
+   npm run build    # type-check and build for production
+   ```
+
+## Project Structure
 
 ```
+src/
+├── components/   # ArticleCard, Header, Pagination, GuestRoute, ProtectedRoute, skeletons
+├── hooks/        # One React Query hook per query or mutation (useArticles, useCreateArticle, ...)
+├── layouts/      # RootLayout (header + page + footer)
+├── lib/          # Supabase client
+├── pages/        # home, blog, article, articleForm (create + edit), myArticles, login, register
+├── schemas/      # Zod schemas for the auth and article forms
+├── services/     # All Supabase calls, split by table (articles, categories, auth, storage)
+├── stores/       # Zustand auth store, synced with onAuthStateChange
+├── types/        # Shared TypeScript types
+└── utils/        # formatDate (Intl, ar-EG), pagination helpers
+```
+
+Data flows in one direction: **page → hook (React Query) → service (Supabase)**. The hooks also translate between the form's shape and the database's shape (for example, the uploaded file becomes a public image URL).
+
+## What I Learned
+
+- Designing a relational schema and protecting it with Row Level Security instead of trusting the frontend
+- Supabase Auth and keeping auth state in sync with `onAuthStateChange`
+- Uploading files to Storage and writing folder-based storage policies
+- React Query mutations and cache invalidation with query-key prefixes
+- Dependent queries (`enabled`) and parallel queries (`useQueries` + `combine`)
+- Building one form for both create and edit: `reset()`, a separate edit schema, and route guards
+- Keeping filters and pagination in the URL with `useSearchParams`
