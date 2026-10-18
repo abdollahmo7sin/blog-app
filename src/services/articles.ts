@@ -81,3 +81,12 @@ export const deleteArticle = async (id: number) => {
         .eq("id", id)
     if (error) throw error
 }
+
+export const getUserArticles = async (userId: string) => {
+    const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, description, thumbnail, created_at, category:categories(id, title),author:profiles(display_name)")
+        .eq("author_id", userId).order("created_at", { ascending: false })
+    if (error) throw error
+    return data as unknown as Article[]
+}

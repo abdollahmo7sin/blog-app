@@ -8,6 +8,7 @@ import { Register } from "./pages/register"
 import { GuestRoute } from "./components/GuestRoute"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 import { ArticleForm } from "./pages/articleForm"
+import { MyArticles } from "./pages/myArticles"
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
         <Route element={<ProtectedRoute />} >
           <Route path="/articles/new" element={<ArticleForm />} />
           <Route path="/articles/:id/edit" element={<ArticleForm />} />
+          <Route path="/my-articles" element={<MyArticles />} />
         </Route>
       </Route>
     </Routes>

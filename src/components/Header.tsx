@@ -46,12 +46,12 @@ export const Header = () => {
                         </div>
                     ) : isLoggedIn ? (
                         <div className="hidden sm:flex items-center gap-3">
-                            <span className="flex items-center gap-2 text-sm font-medium">
+                            <Link to="/my-articles" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors cursor-pointer">
                                 <span className="size-8 rounded-full bg-accent text-ink flex items-center justify-center font-semibold" aria-hidden="true">
                                     {displayName.charAt(0)}
                                 </span>
                                 {displayName}
-                            </span>
+                            </Link>
                             <button
                                 onClick={() => logout()}
                                 type="button"

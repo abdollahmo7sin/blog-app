@@ -15,6 +15,7 @@ export const Article = () => {
     const { mutate: deleteArticle, isPending: isDeleting } = useDeleteArticle()
     const navigate = useNavigate()
     const handleDelete = () => {
+        if (!article) return
         if (window.confirm("هل انت متاكد من حذف المقال؟")) {
 
             deleteArticle({ id: Number(id), thumbnail: article.thumbnail }, {
